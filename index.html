@@ -164,6 +164,14 @@ svg.ring{transform:rotate(-90deg)}
 .quote-card{background:rgba(0,0,0,.15);border:1px solid rgba(255,255,255,.1);border-radius:var(--r);padding:12px 14px;margin-top:6px}
 .quote-text{font-size:13px;color:#fff;font-style:italic;line-height:1.6;margin-bottom:4px}
 .quote-auth{font-size:11px;color:rgba(255,255,255,.55);font-weight:500}
+/* STAT TILES */
+.tile-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.tile{border-radius:16px;padding:14px;cursor:pointer;transition:transform .12s}
+.tile:active{transform:scale(.97)}
+.tile-icon{width:32px;height:32px;border-radius:9px;display:flex;align-items:center;justify-content:center;margin-bottom:10px}
+.tile-icon i{font-size:16px;color:#fff}
+.tile-v{font-size:22px;font-weight:800;line-height:1}
+.tile-l{font-size:11px;font-weight:600;margin-top:3px}
 /* HEATMAP */
 .heatmap{display:grid;grid-template-columns:repeat(14,1fr);gap:3px;margin:8px 0}
 .hm-cell{aspect-ratio:1;border-radius:3px}
@@ -265,7 +273,7 @@ svg.ring{transform:rotate(-90deg)}
       <div style="flex:1;overflow-y:auto">
         <div style="font-size:26px;font-weight:800;color:var(--tx);margin-bottom:6px;letter-spacing:-.5px">What's your name?</div>
         <div style="font-size:14px;color:var(--tx3);margin-bottom:24px">Forge will use this to greet you every day.</div>
-        <div class="fg"><label class="fl">First name</label><input id="ob-name" placeholder="e.g. Victor" style="font-size:16px;padding:13px"></div>
+        <div class="fg"><label class="fl">First name</label><input id="ob-name" placeholder="Enter your name" style="font-size:16px;padding:13px"></div>
         <div class="fg"><label class="fl">Pick your avatar</label>
           <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
             <span class="ob-emoji on" onclick="pickEmoji(this)">&#x1F4AA;</span>
@@ -310,7 +318,7 @@ svg.ring{transform:rotate(-90deg)}
       <div style="flex:1;overflow-y:auto">
         <div style="font-size:26px;font-weight:800;color:var(--tx);margin-bottom:6px;letter-spacing:-.5px">Your numbers</div>
         <div style="font-size:14px;color:var(--tx3);margin-bottom:20px">All optional — helps set accurate targets.</div>
-        <div class="g2"><div class="fg"><label class="fl">Current weight (kg)</label><input id="ob-w" type="number" step="0.1" placeholder="82"></div><div class="fg"><label class="fl">Goal weight (kg)</label><input id="ob-gw" type="number" step="0.1" placeholder="76"></div></div>
+        <div class="g2"><div class="fg"><label class="fl">Current weight (kg)</label><input id="ob-w" type="number" step="0.1" placeholder="e.g. 75"></div><div class="fg"><label class="fl">Goal weight (kg)</label><input id="ob-gw" type="number" step="0.1" placeholder="e.g. 70"></div></div>
         <div class="g2"><div class="fg"><label class="fl">Height (cm)</label><input id="ob-h" type="number" placeholder="174"></div><div class="fg"><label class="fl">Age</label><input id="ob-age" type="number" placeholder="37"></div></div>
         <div class="fg"><label class="fl">Experience</label><select id="ob-lvl"><option value="beginner">Beginner — under 1 year</option><option value="intermediate">Intermediate — 1-3 years</option><option value="advanced">Advanced — 3+ years</option><option value="returning">Returning after a break</option></select></div>
         <div class="fg"><label class="fl">Training days per week</label><select id="ob-days"><option value="3">3 days</option><option value="4" selected>4 days</option><option value="5">5 days</option><option value="6">6 days</option></select></div>
@@ -353,13 +361,28 @@ svg.ring{transform:rotate(-90deg)}
   </div>
 </div>
 
+<!-- INVITE FRIENDS MODAL -->
+<div class="overlay" id="invite-modal">
+  <div class="modal">
+    <div class="modal-title">Invite to challenge</div>
+    <div id="invite-friends-list" style="margin-bottom:12px"></div>
+    <div style="background:var(--sf2);border-radius:var(--rs);padding:12px 14px;margin-bottom:12px">
+      <div style="font-size:11px;color:var(--tx3);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px">Or share this challenge</div>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" style="flex:1" onclick="copyInviteText()"><i class="ti ti-copy"></i>Copy invite text</button>
+      </div>
+    </div>
+    <button class="btn btn-f" onclick="closeOv('invite-modal')">Close</button>
+  </div>
+</div>
+
 <!-- ADD USER MODAL -->
 <div class="overlay" id="add-user-modal">
   <div class="modal">
     <div class="modal-title">New profile</div>
-    <div class="fg"><label class="fl">Name</label><input id="nu-name" placeholder="e.g. Victor"></div>
-    <div class="fg"><label class="fl">Emoji</label><input id="nu-emoji" placeholder="V" maxlength="2" value="V"></div>
-    <div class="fg"><label class="fl">Goal weight (kg)</label><input id="nu-goal" type="number" placeholder="76"></div>
+    <div class="fg"><label class="fl">Name</label><input id="nu-name" placeholder="Enter name"></div>
+    <div class="fg"><label class="fl">Emoji</label><input id="nu-emoji" placeholder="Letter or emoji" maxlength="2" value=""></div>
+    <div class="fg"><label class="fl">Goal weight (kg)</label><input id="nu-goal" type="number" placeholder="e.g. 70"></div>
     <div class="btn-row"><button class="btn btn-ac btn-f" onclick="addUserQuick()">Create</button><button class="btn btn-f" onclick="closeOv('add-user-modal')">Cancel</button></div>
   </div>
 </div>
@@ -425,7 +448,7 @@ svg.ring{transform:rotate(-90deg)}
         <div class="ring-label">Water</div><div class="ring-val" id="rv-w">0%</div>
       </div>
       <div class="ring-item">
-        <svg class="ring" width="58" height="58" viewBox="0 0 58 58"><circle class="ring-bg" cx="29" cy="29" r="24"/><circle class="ring-fill" id="ring-c" cx="29" cy="29" r="24" stroke="#fb923c" stroke-dasharray="150.8" stroke-dashoffset="150.8"/></svg>
+        <svg class="ring" width="58" height="58" viewBox="0 0 58 58"><circle class="ring-bg" cx="29" cy="29" r="24"/><circle class="ring-fill" id="ring-c" cx="29" cy="29" r="24" stroke="#fde047" stroke-dasharray="150.8" stroke-dashoffset="150.8"/></svg>
         <div class="ring-label">Calories</div><div class="ring-val" id="rv-c">0%</div>
       </div>
       <div class="ring-item">
@@ -440,6 +463,29 @@ svg.ring{transform:rotate(-90deg)}
     <div class="quote-card"><div class="quote-text" id="dash-quote"></div><div class="quote-auth" id="dash-auth"></div></div>
   </div>
   <div class="pad">
+    <!-- VIBRANT STAT TILES -->
+    <div class="tile-grid">
+      <div class="tile" style="background:linear-gradient(135deg,#dbeafe,#bfdbfe)" onclick="goTo('s-food',document.querySelectorAll('.nb')[1])">
+        <div class="tile-icon" style="background:#3b82f6"><i class="ti ti-droplet"></i></div>
+        <div class="tile-v" id="tile-water-v" style="color:#1e40af">0</div>
+        <div class="tile-l" style="color:#1e40af" id="tile-water-sub">of 2000ml</div>
+      </div>
+      <div class="tile" style="background:linear-gradient(135deg,#fef3c7,#fde68a)" onclick="goTo('s-food',document.querySelectorAll('.nb')[1])">
+        <div class="tile-icon" style="background:#d97706"><i class="ti ti-flame"></i></div>
+        <div class="tile-v" id="tile-cal-v" style="color:#92400e">0</div>
+        <div class="tile-l" style="color:#92400e" id="tile-cal-sub">of 2400 kcal</div>
+      </div>
+      <div class="tile" style="background:linear-gradient(135deg,#dcfce7,#bbf7d0)" onclick="goTo('s-food',document.querySelectorAll('.nb')[1])">
+        <div class="tile-icon" style="background:#16a34a"><i class="ti ti-meat"></i></div>
+        <div class="tile-v" id="tile-prot-v" style="color:#14532d">0g</div>
+        <div class="tile-l" style="color:#14532d" id="tile-prot-sub">of 150g target</div>
+      </div>
+      <div class="tile" style="background:linear-gradient(135deg,#f3e8ff,#e9d5ff)" onclick="goTo('s-habits',document.querySelectorAll('.nb')[5])">
+        <div class="tile-icon" style="background:#9333ea"><i class="ti ti-checklist"></i></div>
+        <div class="tile-v" id="tile-hab-v" style="color:#581c87">0/7</div>
+        <div class="tile-l" style="color:#581c87" id="tile-hab-sub">fitness habits done</div>
+      </div>
+    </div>
     <div class="week-banner">
       <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.7);text-transform:uppercase;letter-spacing:.06em;margin-bottom:3px">Weekly intention</div>
       <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:10px" id="week-goal-txt">Tap to set your goal for this week...</div>
@@ -910,8 +956,8 @@ function ulo(k,d){return ld(uk(k),d);}
 function usv(k,v){sv(uk(k),v);}
 
 // OVERLAY
-function openOv(id){document.getElementById(id).classList.add("on");}
-function closeOv(id){document.getElementById(id).classList.remove("on");}
+function openOv(id){const el=document.getElementById(id);el.classList.add("on");el.style.display="";}
+function closeOv(id){const el=document.getElementById(id);el.classList.remove("on");el.style.display="none";}
 
 // TOAST
 let tT;
@@ -933,11 +979,15 @@ function clearAll(){if(!confirm("Delete all data? Cannot be undone."))return;loc
 function initUsers(){
   if(location.search.includes("reset")){localStorage.clear();history.replaceState(null,"",location.pathname);}
   G.users=ld("forge_users",[]);G.challenges=ld("forge_challenges",[]);G.feed=ld("forge_feed",[]);G.prs=ld("forge_prs",{});
-  if(!G.users.find(u=>u.id==="victor")){
-    G.users.unshift({id:"victor",name:"Victor",emoji:"V",goal:76,color:"#e85d04",calories:2400,protein:150,weight:82,height:174,age:37,level:"intermediate",days:4,goalType:"both",prebuilt:true});
-    sv("forge_users",G.users);sv("forge_victor_weights",[{date:"2025-06-29",val:82}]);sv("forge_victor_programs",VICTOR_PROGRAMS);
-  }
   if(!G.challenges.length){G.challenges=CH_IDEAS.slice(0,3).map((c,i)=>({...c,id:i,active:true,exp:tstr(),participants:{}}));sv("forge_challenges",G.challenges);}
+  if(!G.users.length){
+    // No profiles on this device yet — go straight to onboarding instead of an empty login screen
+    const app=document.getElementById("app");app.style.display="flex";app.style.flexDirection="column";app.style.height="100dvh";app.style.height="-webkit-fill-available";
+    goTo("s-login");
+    document.getElementById("ob-screen").style.display="flex";document.getElementById("ob-screen").style.flexDirection="column";
+    obReset();obGo(0);
+    return;
+  }
   showLogin();
 }
 function showLogin(){
@@ -953,7 +1003,7 @@ function loginAs(id){
   CUR.water=uldStr("water",0);CUR.meals=uldStr("meals",[]);
   CUR.habits={fitness:uldStr("hab_fitness",HABITS.fitness.map(()=>false)),lifestyle:uldStr("hab_lifestyle",HABITS.lifestyle.map(()=>false)),mental:uldStr("hab_mental",HABITS.mental.map(()=>false)),custom:[]};
   CUR.hStreaks=ulo("hStreaks",{});CUR.gymLog=ulo("gymLog",[]);CUR.weights=ulo("weights",[{date:tstr(),val:G.cur.weight||82}]);
-  CUR.programs=ulo("programs",G.cur.id==="victor"?VICTOR_PROGRAMS:[]);CUR.customHabits=ulo("customHabits",[]);CUR.goals=ulo("goals",[]);
+  CUR.programs=ulo("programs",(G.cur.name||"").toLowerCase().trim()==="victor"?VICTOR_PROGRAMS:[]);CUR.customHabits=ulo("customHabits",[]);CUR.goals=ulo("goals",[]);
   CUR.weekGoal=ulo("weekGoal","");CUR.progExList=[];CUR.targetCal=G.cur.calories||2400;CUR.targetProt=G.cur.protein||150;
   CUR.habits.custom=uldStr("hab_custom",CUR.customHabits.map(()=>false));
   goTo("s-dash");buildAll();
@@ -989,7 +1039,6 @@ function obStep3Next(){
 function obSkipAll(){closeOv("ob-screen");}
 function obFinish(){
   const name=OB.name||"You";
-  if(name.toLowerCase().trim()==="victor"&&G.users.find(u=>u.id==="victor")){closeOv("ob-screen");loginAs("victor");return;}
   const cols=["#2563eb","#15803d","#7c3aed","#d97706","#dc2626","#0d9488"];
   const nu={id:uid2(),name,emoji:obEmoji||name[0]||"V",goal:OB.goalWeight||76,color:cols[G.users.length%cols.length],calories:OB.calories||2400,protein:OB.protein||150,weight:OB.weight||82,height:OB.height,age:OB.age,level:OB.level,days:OB.days,goalType:OB.goal};
   G.users.push(nu);sv("forge_users",G.users);sv("forge_"+nu.id+"_weights",[{date:tstr(),val:OB.weight||82}]);
@@ -1016,15 +1065,18 @@ function buildAll(){
 }
 function updateDash(){
   const t=totals(),fitD=CUR.habits.fitness.filter(Boolean).length;
-  document.getElementById("hs-w").textContent=CUR.water;document.getElementById("hs-c").textContent=t.cal;
-  document.getElementById("hs-p").textContent=t.prot+"g";document.getElementById("hs-h").textContent=fitD+"/7";
   document.getElementById("h-streak").textContent=fitD;
-  const tc=CUR.targetCal||2400,tp=CUR.targetProt||150;
-  document.getElementById("dp-w").style.width=pct(CUR.water,2000);document.getElementById("dp-wv").textContent=CUR.water+"/2000ml";
-  document.getElementById("dp-c").style.width=pct(t.cal,tc);document.getElementById("dp-cv").textContent=t.cal+"/"+tc;
-  document.getElementById("dp-p").style.width=pct(t.prot,tp);document.getElementById("dp-pv").textContent=t.prot+"/"+tp+"g";
-  document.getElementById("dp-h").style.width=pct(fitD,7);document.getElementById("dp-hv").textContent=fitD+"/7";
   document.getElementById("d-weight").textContent=CUR.weights[0]?.val||G.cur?.weight||82;
+  // Stat tiles
+  const tc=CUR.targetCal||2400,tp=CUR.targetProt||150;
+  const wEl=document.getElementById("tile-water-v");if(wEl)wEl.textContent=CUR.water;
+  const wsEl=document.getElementById("tile-water-sub");if(wsEl)wsEl.textContent="of 2000ml";
+  const cEl=document.getElementById("tile-cal-v");if(cEl)cEl.textContent=t.cal;
+  const csEl=document.getElementById("tile-cal-sub");if(csEl)csEl.textContent="of "+tc+" kcal";
+  const pEl=document.getElementById("tile-prot-v");if(pEl)pEl.textContent=t.prot+"g";
+  const psEl=document.getElementById("tile-prot-sub");if(psEl)psEl.textContent="of "+tp+"g target";
+  const hEl=document.getElementById("tile-hab-v");if(hEl)hEl.textContent=fitD+"/7";
+  const hsEl=document.getElementById("tile-hab-sub");if(hsEl)hsEl.textContent="fitness habits done";
   updateRings();
 }
 function updateRings(){
@@ -1323,14 +1375,23 @@ function buildCalendar(){
 // CHALLENGES
 function buildChallenges(){
   const active=G.challenges.filter(c=>c.active&&c.exp>=tstr());
-  document.getElementById("active-chs").innerHTML=active.length?active.map(c=>{const my=c.participants[G.cur?.id];return`<div class="ch-card${my?.declined?" declined":""}"><div class="ch-title">${c.name}${my?.declined?' <span class="badge brd">Passed</span>':""}</div><div class="ch-desc">${c.desc}</div><div class="ch-meta"><span class="badge bam">${c.pts} pts</span><span class="badge bb">${Object.keys(c.participants).length} joined</span></div>${my?.done?`<button class="done-btn done btn-f"><i class="ti ti-check"></i>Completed! +${c.pts}pts</button>`:my?.declined?`<button class="btn btn-f" onclick="undecline('${c.id}')"><i class="ti ti-refresh"></i>Change mind</button>`:`<div style="display:flex;gap:8px"><button class="btn btn-ac" style="flex:2" onclick="acceptCh('${c.id}')"><i class="ti ti-trophy"></i>Accept</button><button class="btn" style="flex:2" onclick="completeCh('${c.id}')"><i class="ti ti-check"></i>Done</button><button class="btn btn-rd" style="flex:1" onclick="declineCh('${c.id}')">Pass</button></div>`}</div>`;}).join(""):'<div class="empty"><i class="ti ti-trophy"></i>No active challenges</div>';
+  document.getElementById("active-chs").innerHTML=active.length?active.map(c=>{const my=c.participants[G.cur?.id];return`<div class="ch-card${my?.declined?" declined":""}"><div class="ch-title">${c.name}${my?.declined?' <span class="badge brd">Passed</span>':""}</div><div class="ch-desc">${c.desc}</div><div class="ch-meta"><span class="badge bam">${c.pts} pts</span><span class="badge bb">${Object.keys(c.participants).length} joined</span></div>${my?.done?`<button class="done-btn done btn-f"><i class="ti ti-check"></i>Completed! +${c.pts}pts</button>`:my?.declined?`<button class="btn btn-f" onclick="undecline('${c.id}')"><i class="ti ti-refresh"></i>Change mind</button>`:`<div style="display:flex;gap:8px"><button class="btn btn-ac" style="flex:2" onclick="acceptCh('${c.id}')"><i class="ti ti-trophy"></i>Accept</button><button class="btn" style="flex:2" onclick="completeCh('${c.id}')"><i class="ti ti-check"></i>Done</button><button class="btn btn-rd" style="flex:1" onclick="declineCh('${c.id}')">Pass</button></div>`}<button class="btn btn-sm btn-f" style="margin-top:8px" onclick="openInvite('${c.id}')"><i class="ti ti-user-plus"></i>Invite friends</button></div>`;}).join(""):'<div class="empty"><i class="ti ti-trophy"></i>No active challenges</div>';
 }
 function acceptCh(id){const c=G.challenges.find(c=>c.id==id);if(!c)return;if(!c.participants[G.cur.id])c.participants[G.cur.id]={name:G.cur.name,pts:0,done:false,declined:false};c.participants[G.cur.id].declined=false;sv("forge_challenges",G.challenges);buildChallenges();buildLeaderboard();buildDashChallenge();toast("Challenge accepted!");}
 function completeCh(id){const c=G.challenges.find(c=>c.id==id);if(!c)return;if(!c.participants[G.cur.id])c.participants[G.cur.id]={name:G.cur.name,pts:0};c.participants[G.cur.id].pts=c.pts;c.participants[G.cur.id].done=true;c.participants[G.cur.id].declined=false;sv("forge_challenges",G.challenges);buildChallenges();buildLeaderboard();buildDashChallenge();toast("+"+c.pts+" points!");autoPost("challenge",G.cur.name+" just completed: "+c.name+" +"+c.pts+"pts");}
 function declineCh(id){const c=G.challenges.find(c=>c.id==id);if(!c)return;if(!c.participants[G.cur.id])c.participants[G.cur.id]={name:G.cur.name,pts:0,done:false};c.participants[G.cur.id].declined=true;sv("forge_challenges",G.challenges);buildChallenges();toast("Passed. You can join later.");}
 function undecline(id){const c=G.challenges.find(c=>c.id==id);if(!c)return;if(c.participants[G.cur.id])c.participants[G.cur.id].declined=false;sv("forge_challenges",G.challenges);buildChallenges();toast("Welcome back!");}
 function createChallenge(){const name=document.getElementById("ch-name").value.trim();if(!name){toast("Enter a name");return;}const c={id:uid2(),name,desc:document.getElementById("ch-desc").value||name,pts:+document.getElementById("ch-pts").value||100,exp:document.getElementById("ch-exp").value||tstr(),active:true,participants:{}};G.challenges.push(c);sv("forge_challenges",G.challenges);document.getElementById("ch-name").value="";document.getElementById("ch-desc").value="";buildChallenges();buildLeaderboard();toast("Challenge created!");}
-function buildChallengeIdeas(){document.getElementById("ch-ideas").innerHTML=CH_IDEAS.map(c=>`<div class="row"><div class="rl"><div class="rt">${c.name}</div><div class="rs">${c.desc}</div></div><div class="rr"><span class="badge bam">${c.pts}pts</span></div></div>`).join("");}
+function buildChallengeIdeas(){document.getElementById("ch-ideas").innerHTML=CH_IDEAS.map((c,i)=>`<div class="row"><div class="rl"><div class="rt">${c.name}</div><div class="rs">${c.desc}</div></div><div class="rr" style="display:flex;align-items:center;gap:6px"><span class="badge bam">${c.pts}pts</span><button class="btn btn-sm btn-ac" onclick="addIdeaAsChallenge(${i})"><i class="ti ti-plus"></i>Add</button></div></div>`).join("");}
+function addIdeaAsChallenge(idx){
+  const s=CH_IDEAS[idx];
+  const existing=G.challenges.find(c=>c.name===s.name&&c.active&&c.exp>=tstr());
+  if(existing){acceptCh(existing.id);toast(s.name+" — joined!");return;}
+  const c={id:uid2(),name:s.name,desc:s.desc,pts:s.pts,exp:tstr(),active:true,participants:{}};
+  G.challenges.push(c);c.participants[G.cur.id]={name:G.cur.name,pts:0,done:false,declined:false};
+  sv("forge_challenges",G.challenges);buildChallenges();buildLeaderboard();buildDashChallenge();
+  toast(s.name+" added as today's challenge!");
+}
 function autoComplete(){
   if(CUR.water>=2000){const c=G.challenges.find(c=>c.name==="2L Water"&&c.active&&!c.participants[G.cur?.id]?.done);if(c)completeCh(c.id);}
   if([...CUR.habits.fitness,...CUR.habits.lifestyle,...CUR.habits.mental].every(Boolean)){const c=G.challenges.find(c=>c.name==="All Habits Done"&&c.active&&!c.participants[G.cur?.id]?.done);if(c)completeCh(c.id);}
@@ -1345,9 +1406,45 @@ function buildDashChallenge(){
   const active=G.challenges.filter(c=>c.active&&c.exp>=tstr());const el=document.getElementById("dash-challenge");
   if(!active.length){const s=CH_IDEAS[suggI];el.innerHTML=`<div class="ch-title">${s.name}</div><div class="ch-desc">${s.desc}</div><div class="ch-meta"><span class="badge bam">${s.pts} pts</span><span class="badge ba">Suggested today</span></div><button class="btn btn-ac btn-f" onclick="quickStartCh(${suggI})"><i class="ti ti-plus"></i>Start this challenge</button>`;return;}
   const c=active[0],my=c.participants[G.cur?.id];
-  el.innerHTML=`<div class="ch-title">${c.name}</div><div class="ch-desc">${c.desc}</div><div class="ch-meta"><span class="badge bam">${c.pts} pts</span><span class="badge bb">${Object.keys(c.participants).length} joined</span></div>${my?.done?`<button class="done-btn done btn-f"><i class="ti ti-check"></i>Done! +${c.pts}pts</button>`:my?.declined?`<button class="btn btn-f" onclick="undecline('${c.id}')"><i class="ti ti-refresh"></i>Join</button>`:`<div style="display:flex;gap:8px"><button class="btn btn-ac" style="flex:2" onclick="acceptCh('${c.id}')"><i class="ti ti-trophy"></i>Accept</button><button class="btn" style="flex:1" onclick="completeCh('${c.id}')"><i class="ti ti-check"></i>Done</button><button class="btn btn-rd" style="flex:1" onclick="declineCh('${c.id}')">Pass</button></div>`}`;
+  el.innerHTML=`<div class="ch-title">${c.name}</div><div class="ch-desc">${c.desc}</div><div class="ch-meta"><span class="badge bam">${c.pts} pts</span><span class="badge bb">${Object.keys(c.participants).length} joined</span></div>${my?.done?`<button class="done-btn done btn-f"><i class="ti ti-check"></i>Done! +${c.pts}pts</button>`:my?.declined?`<button class="btn btn-f" onclick="undecline('${c.id}')"><i class="ti ti-refresh"></i>Join</button>`:`<div style="display:flex;gap:8px"><button class="btn btn-ac" style="flex:2" onclick="acceptCh('${c.id}')"><i class="ti ti-trophy"></i>Accept</button><button class="btn" style="flex:1" onclick="completeCh('${c.id}')"><i class="ti ti-check"></i>Done</button><button class="btn btn-rd" style="flex:1" onclick="declineCh('${c.id}')">Pass</button></div>`}<button class="btn btn-sm btn-f" style="margin-top:8px" onclick="openInvite('${c.id}')"><i class="ti ti-user-plus"></i>Invite friends</button>`;
 }
 function quickStartCh(idx){const s=CH_IDEAS[idx];const c={id:uid2(),name:s.name,desc:s.desc,pts:s.pts,exp:tstr(),active:true,participants:{}};G.challenges.push(c);sv("forge_challenges",G.challenges);buildChallenges();buildDashChallenge();toast("Challenge started!");}
+
+// INVITE FRIENDS TO CHALLENGE
+let inviteChId=null;
+function openInvite(chId){
+  inviteChId=chId;
+  const c=G.challenges.find(c=>c.id==chId);if(!c)return;
+  const friends=ulo("friends",[]);
+  const el=document.getElementById("invite-friends-list");
+  if(!friends.length){
+    el.innerHTML='<div class="empty"><i class="ti ti-users"></i>No friends added yet. Add friends in the Crew tab first.</div>';
+  } else {
+    el.innerHTML=friends.map((f,i)=>{
+      const alreadyIn=Object.values(c.participants||{}).some(p=>p.name===f.name);
+      return`<div class="row"><div style="width:32px;height:32px;border-radius:50%;background:${f.color||"var(--ac)"};display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700;color:#fff;flex-shrink:0">${f.emoji||f.name[0]}</div><div class="rl"><div class="rt">${f.name}</div></div><div class="rr">${alreadyIn?'<span class="badge bg3">Invited</span>':`<button class="btn btn-sm btn-ac" onclick="inviteFriend(${i})"><i class="ti ti-send"></i>Invite</button>`}</div></div>`;
+    }).join("");
+  }
+  openOv("invite-modal");
+}
+function inviteFriend(friendIdx){
+  const friends=ulo("friends",[]);const f=friends[friendIdx];if(!f)return;
+  const c=G.challenges.find(c=>c.id==inviteChId);if(!c)return;
+  // Local-only invite: marks friend as a participant placeholder so they show on the leaderboard once they join for real via shared backend
+  const fakeId="friend_"+f.code;
+  c.participants[fakeId]=c.participants[fakeId]||{name:f.name,pts:0,done:false,declined:false,invited:true};
+  sv("forge_challenges",G.challenges);
+  toast(f.name+" invited! They'll see this once Forge is connected online.");
+  openInvite(inviteChId);
+  buildChallenges();buildDashChallenge();buildLeaderboard();
+}
+function copyInviteText(){
+  const c=G.challenges.find(c=>c.id==inviteChId);if(!c)return;
+  const myCode=getOrCreateFriendCode();
+  const text=`Join me on Forge! I started the "${c.name}" challenge (${c.pts}pts). Add me with my friend code ${myCode} and let's compete!`;
+  if(navigator.clipboard){navigator.clipboard.writeText(text).then(()=>toast("Invite text copied!"));}
+  else toast(text);
+}
 
 // COMMUNITY
 function toggleComposer(){const s=document.getElementById("composer-section");s.style.display=s.style.display==="none"?"block":"none";}
