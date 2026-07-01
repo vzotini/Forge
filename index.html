@@ -631,10 +631,18 @@ svg.ring{transform:rotate(-90deg)}
       <div style="font-size:15px;font-weight:700;color:#fff;margin-bottom:10px" id="week-goal-txt">Tap to set your goal for this week...</div>
       <button onclick="setWeekGoal()" class="btn btn-sm" style="background:rgba(255,255,255,.15);color:#fff;border-color:rgba(255,255,255,.3);font-size:12px"><i class="ti ti-edit"></i>Set goal</button>
     </div>
+    <div class="card" id="weekly-recap-card" style="display:none;background:var(--ac-bg);border:1px solid var(--ac-bd)">
+      <div class="ct"><span class="ct-l" style="color:var(--ac-tx)"><i class="ti ti-star"></i>Weekly recap</span></div>
+      <div style="font-size:14px;font-weight:700;color:var(--ac-tx);margin-bottom:10px" id="weekly-recap-text">Keep it going this week.</div>
+      <div style="display:flex;gap:16px">
+        <div><span style="font-size:18px;font-weight:800;color:var(--ac-tx)" id="weekly-recap-sessions">0</span><span style="font-size:11px;color:var(--ac-tx);opacity:.75"> sessions</span></div>
+        <div><span style="font-size:18px;font-weight:800;color:var(--ac-tx)" id="weekly-recap-prs">0</span><span style="font-size:11px;color:var(--ac-tx);opacity:.75"> PRs</span></div>
+      </div>
+    </div>
     <div class="sg3">
       <div class="sc"><div class="sl2">Sessions</div><div class="sv2" id="d-sessions">0</div><div class="su">this week</div></div>
       <div class="sc"><div class="sl2">Best streak</div><div class="sv2" id="d-best-streak">0</div><div class="su">days</div></div>
-      <div class="sc"><div class="sl2">Weight</div><div class="sv2"><span id="d-weight">82</span><span class="su">kg</span></div></div>
+      <div class="sc"><div class="sl2">Weight</div><div class="sv2"><span id="d-weight">82</span><span class="su" id="d-weight-unit">kg</span></div></div>
     </div>
     <div class="card">
       <div class="ct"><span class="ct-l"><i class="ti ti-flame"></i>14-day activity</span></div>
@@ -722,9 +730,28 @@ svg.ring{transform:rotate(-90deg)}
       </div>
     </div>
     <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:11px;font-weight:700;color:var(--tx3);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px">Session length</div>
+          <div style="font-size:24px;font-weight:800;color:var(--tx);font-variant-numeric:tabular-nums" id="session-display">00:00</div>
+        </div>
+        <button class="btn btn-ac" id="session-toggle-btn" onclick="toggleSessionTimer()"><i class="ti ti-player-play"></i> Start session</button>
+      </div>
+    </div>
+    <div class="card">
       <div class="ct"><span class="ct-l"><i class="ti ti-calendar"></i>Select day</span></div>
       <div class="tab-row" id="gym-tabs"></div>
       <div id="gym-plan"></div>
+    </div>
+    <div class="card" id="deload-card" style="display:none;background:var(--am-bg);border:1px solid var(--am-bd)">
+      <div style="display:flex;align-items:flex-start;gap:12px">
+        <div style="width:36px;height:36px;border-radius:10px;background:var(--am);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-battery-2" style="font-size:18px;color:#fff"></i></div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:var(--am-tx)">Time for a deload week?</div>
+          <div style="font-size:12.5px;color:var(--tx2);margin-top:2px;line-height:1.5" id="deload-text">You've trained hard for a few weeks straight. A lighter week helps recovery and long-term progress.</div>
+          <button class="btn btn-sm" style="margin-top:10px;background:var(--am);color:#fff;border-color:var(--am)" onclick="markDeloadDone()">I'm taking a deload week</button>
+        </div>
+      </div>
     </div>
     <div class="card">
       <div class="ct"><span class="ct-l"><i class="ti ti-bolt"></i>Quick training</span><span style="font-size:11px;color:var(--tx3)">Outside your program</span></div>
@@ -782,8 +809,8 @@ svg.ring{transform:rotate(-90deg)}
   <div class="hdr"><div class="hdr-top"><div class="logo-row"><div class="hdr-title">Progress</div></div></div></div>
   <div class="pad">
     <div class="sg2">
-      <div class="sc"><div class="sl2">Current weight</div><div class="sv2"><span id="pr-cur">82</span><span class="su"> kg</span></div></div>
-      <div class="sc"><div class="sl2">Lost so far</div><div class="sv2"><span id="pr-lost">0</span><span class="su"> kg</span></div></div>
+      <div class="sc"><div class="sl2">Current weight</div><div class="sv2"><span id="pr-cur">82</span><span class="su" id="pr-cur-unit"> kg</span></div></div>
+      <div class="sc"><div class="sl2">Lost so far</div><div class="sv2"><span id="pr-lost">0</span><span class="su" id="pr-lost-unit"> kg</span></div></div>
     </div>
     <div class="card">
       <div class="ct"><span class="ct-l"><i class="ti ti-calendar"></i>Activity calendar</span>
@@ -807,6 +834,55 @@ svg.ring{transform:rotate(-90deg)}
       <div class="pg"><div class="ph"><span class="pl">Program (16 weeks)</span><span class="pv" id="pr-wk">Week 1</span></div><div class="pt"><div class="pf pba" id="pr-wkb" style="width:6%"></div></div></div>
     </div>
     <div class="card"><div class="ct"><span class="ct-l"><i class="ti ti-award"></i>Personal records</span></div><div id="pr-list"><div class="empty"><i class="ti ti-award"></i>PRs appear when you beat a previous best</div></div></div>
+    <div class="card">
+      <div class="ct"><span class="ct-l"><i class="ti ti-calculator"></i>1-Rep Max calculator</span></div>
+      <div class="g2">
+        <div class="fg"><label class="fl">Weight lifted</label><input id="orm-weight" type="number" step="0.5" placeholder="e.g. 80" oninput="calcOneRepMax()"></div>
+        <div class="fg"><label class="fl">Reps performed</label><input id="orm-reps" type="number" placeholder="e.g. 8" oninput="calcOneRepMax()"></div>
+      </div>
+      <div style="background:var(--ac-bg);border-radius:var(--rs);padding:14px;text-align:center;margin-top:4px">
+        <div style="font-size:10px;font-weight:700;color:var(--ac-tx);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px">Estimated 1-rep max</div>
+        <div style="font-size:28px;font-weight:800;color:var(--ac-tx)"><span id="orm-result">--</span> <span style="font-size:14px;font-weight:600" id="orm-unit-lbl">kg</span></div>
+      </div>
+      <div style="font-size:11px;color:var(--tx3);margin-top:8px;line-height:1.5">Estimated using the Epley formula. Most accurate for sets between 1 and 10 reps.</div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="ct-l"><i class="ti ti-chart-bar"></i>Weekly volume by muscle group</span><span style="font-size:11px;color:var(--tx3)">Sets this week</span></div>
+      <div id="volume-list"><div class="empty"><i class="ti ti-chart-bar"></i>Log some sets to see your volume breakdown</div></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="ct-l"><i class="ti ti-medal"></i>Achievements</span><span style="font-size:11px;color:var(--tx3)" id="badges-count">0/0</span></div>
+      <div id="badges-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="ct-l"><i class="ti ti-ruler-2"></i>Body measurements</span><span style="font-size:11px;color:var(--tx3)">cm</span></div>
+      <div class="g2">
+        <div class="fg"><label class="fl">Chest</label><input id="bm-chest" type="number" step="0.1" placeholder="e.g. 102"></div>
+        <div class="fg"><label class="fl">Waist</label><input id="bm-waist" type="number" step="0.1" placeholder="e.g. 84"></div>
+      </div>
+      <div class="g2">
+        <div class="fg"><label class="fl">Arms</label><input id="bm-arms" type="number" step="0.1" placeholder="e.g. 36"></div>
+        <div class="fg"><label class="fl">Legs</label><input id="bm-legs" type="number" step="0.1" placeholder="e.g. 58"></div>
+      </div>
+      <button class="btn btn-ac btn-f" onclick="logMeasurements()"><i class="ti ti-plus"></i>Log measurements</button>
+      <div id="measurements-list" style="margin-top:12px"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="ct-l"><i class="ti ti-chart-line"></i>Protein &amp; calories — last 7 days</span></div>
+      <div id="macro-chart"></div>
+    </div>
+    <div class="card">
+      <div class="ct"><span class="ct-l"><i class="ti ti-bolt"></i>Level</span></div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:12px">
+        <div style="width:52px;height:52px;border-radius:50%;background:var(--grad);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 4px 12px rgba(232,93,4,.3)"><span style="font-size:18px;font-weight:900;color:#fff" id="level-num">1</span></div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;color:var(--tx)" id="level-title">Rookie</div>
+          <div style="font-size:11px;color:var(--tx3)" id="level-xp">0 XP</div>
+        </div>
+      </div>
+      <div class="pt"><div class="pf pba" id="level-bar" style="width:0%"></div></div>
+      <div style="font-size:11px;color:var(--tx3);margin-top:6px" id="level-next">0 XP to next level</div>
+    </div>
     <div class="card">
       <div class="ct"><span class="ct-l"><i class="ti ti-pill"></i>Supplements</span></div>
       <div class="row"><div class="rl"><div class="rt">Whey protein</div><div class="rs">1 scoop — post-workout or breakfast</div></div><div class="rr"><div class="badge bg3">Daily</div></div></div>
@@ -1034,6 +1110,7 @@ svg.ring{transform:rotate(-90deg)}
       <div class="ct"><span class="ct-l"><i class="ti ti-user"></i>Account</span></div>
       <div class="row" style="cursor:pointer" onclick="openOv_profileMenuPopulate();openOv('profile-menu-modal')"><div class="rl"><div class="rt">Edit profile</div><div class="rs">Photo, name, avatar</div></div><i class="ti ti-chevron-right" style="color:var(--tx3);font-size:16px"></i></div>
       <div class="row" style="cursor:pointer" onclick="goTo('s-habit-mgr')"><div class="rl"><div class="rt">Habits and goals</div><div class="rs">Create or remove habits</div></div><i class="ti ti-chevron-right" style="color:var(--tx3);font-size:16px"></i></div>
+      <div class="row" style="cursor:pointer" onclick="exportMyData()"><div class="rl"><div class="rt">Export my data</div><div class="rs">Download everything as a JSON file</div></div><i class="ti ti-download" style="color:var(--tx3);font-size:16px"></i></div>
       <div class="row" style="cursor:pointer" onclick="doLogout()"><div class="rl"><div class="rt">Switch profile</div><div class="rs">Log out to the profile picker</div></div><i class="ti ti-chevron-right" style="color:var(--tx3);font-size:16px"></i></div>
     </div>
     <div class="card">
@@ -1234,8 +1311,19 @@ function applyTheme(){
   document.getElementById("theme-btn-dark")?.classList.toggle("on",t==="dark");
 }
 function setThemeMode(t){sv("forge_theme",t);applyTheme();toast(t==="dark"?"Dark mode on":"Light mode on");}
-function setWeightUnit(u){sv("forge_weight_unit",u);document.getElementById("unit-btn-kg")?.classList.toggle("on",u==="kg");document.getElementById("unit-btn-lb")?.classList.toggle("on",u==="lb");toast("Weight unit set to "+u);}
-function setDistUnit(u){sv("forge_dist_unit",u);document.getElementById("unit-btn-km")?.classList.toggle("on",u==="km");document.getElementById("unit-btn-mi")?.classList.toggle("on",u==="mi");toast("Distance unit set to "+u);}
+function setWeightUnit(u){sv("forge_weight_unit",u);document.getElementById("unit-btn-kg")?.classList.toggle("on",u==="kg");document.getElementById("unit-btn-lb")?.classList.toggle("on",u==="lb");toast("Weight unit set to "+u);buildWeightLog();updateDash();refreshWeightInputPlaceholder();}
+function setDistUnit(u){sv("forge_dist_unit",u);document.getElementById("unit-btn-km")?.classList.toggle("on",u==="km");document.getElementById("unit-btn-mi")?.classList.toggle("on",u==="mi");toast("Distance unit set to "+u);buildChallenges();buildDashChallenge();}
+function getWeightUnit(){return ld("forge_weight_unit","kg");}
+function getDistUnit(){return ld("forge_dist_unit","km");}
+function kgToLb(kg){return +(kg*2.20462).toFixed(1);}
+function lbToKg(lb){return +(lb/2.20462).toFixed(1);}
+function kmToMi(km){return +(km*0.621371).toFixed(1);}
+function miToKm(mi){return +(mi/0.621371).toFixed(1);}
+function displayWeight(kg){const u=getWeightUnit();return u==="lb"?kgToLb(kg)+" lb":kg+" kg";}
+function weightUnitLabel(){return getWeightUnit();}
+function refreshWeightInputPlaceholder(){
+  const wi=document.getElementById("wi");if(wi)wi.placeholder=getWeightUnit()==="lb"?"180.0":"82.0";
+}
 function initSettingsUI(){
   const wu=ld("forge_weight_unit","kg");
   document.getElementById("unit-btn-kg")?.classList.toggle("on",wu==="kg");
@@ -1348,6 +1436,24 @@ function loginAs(id){
   }
 }
 function doLogout(){closeOv("profile-menu-modal");G.cur=null;showLogin();}
+function exportMyData(){
+  if(!G.cur){toast("No profile loaded");return;}
+  const uid=G.cur.id;
+  const bundle={exportedAt:new Date().toISOString(),profile:G.cur,data:{}};
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);
+    if(key&&(key.startsWith("forge_"+uid+"_")||key==="forge_"+uid+"_friendCode")){
+      try{bundle.data[key]=JSON.parse(localStorage.getItem(key));}catch(e){bundle.data[key]=localStorage.getItem(key);}
+    }
+  }
+  const blob=new Blob([JSON.stringify(bundle,null,2)],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;a.download="forge_"+(G.cur.name||"data").toLowerCase().replace(/\s+/g,"_")+"_export.json";
+  document.body.appendChild(a);a.click();document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast("Data exported!");
+}
 function openOv_profileMenuPopulate(){
   if(!G.cur)return;
   const av=document.getElementById("pm-avatar");
@@ -1469,7 +1575,7 @@ function buildAll(){
   document.getElementById("dash-quote").textContent="\u201c"+QUOTES[qi][0]+"\u201d";
   document.getElementById("dash-auth").textContent="— "+QUOTES[qi][1];
   document.getElementById("week-goal-txt").textContent=CUR.weekGoal||"Tap to set your goal for this week...";
-  buildGymTabs();buildHabits();buildWeightLog();buildGymHist();buildProgList();buildQuickTrainGrid();
+  buildGymTabs();buildHabits();buildWeightLog();buildGymHist();buildProgList();buildQuickTrainGrid();refreshWeightInputPlaceholder();checkDeload();buildVolumeTracking();buildBadges();buildMeasurements();buildMacroTrends();buildXPLevel();buildWeeklyRecap();
   buildWater();buildNutrition();buildChallenges();buildLeaderboard();buildDashChallenge();buildDashPlan();
   buildCalendar();buildChallengeIdeas();buildFeed();buildCustomHabMgr();buildGoalList();buildGoalDash();
   buildHeatmap();buildWeekStats();buildPRList();buildFriends();buildChGroupOptions();updateDash();updateRings();
@@ -1483,7 +1589,9 @@ function buildChGroupOptions(){
 function updateDash(){
   const t=totals(),fitD=CUR.habits.fitness.filter(Boolean).length;
   document.getElementById("h-streak").textContent=fitD;
-  document.getElementById("d-weight").textContent=CUR.weights[0]?.val||G.cur?.weight||82;
+  const rawW=CUR.weights[0]?.val||G.cur?.weight||82;
+  document.getElementById("d-weight").textContent=getWeightUnit()==="lb"?kgToLb(rawW):rawW;
+  const dwu=document.getElementById("d-weight-unit");if(dwu)dwu.textContent=getWeightUnit();
   // Stat tiles
   const tc=CUR.targetCal||2400,tp=CUR.targetProt||150;
   const wEl=document.getElementById("tile-water-v");if(wEl)wEl.textContent=CUR.water;
@@ -1569,7 +1677,173 @@ function toggleStopwatch(){
 }
 function resetTimer(){clearInterval(timerInterval);stopwatchRunning=false;timerSeconds=0;document.getElementById("timer-display").textContent="00:00";document.getElementById("timer-toggle-btn").innerHTML='<i class="ti ti-player-play"></i>';}
 
+// SESSION DURATION TIMER
+let sessionInterval=null,sessionSeconds=0,sessionRunning=false,sessionStartTs=null;
+function fmtSession(s){const h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=s%60;return h>0?String(h).padStart(2,"0")+":"+String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0"):String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0");}
+function toggleSessionTimer(){
+  const btn=document.getElementById("session-toggle-btn");
+  if(sessionRunning){
+    clearInterval(sessionInterval);sessionRunning=false;
+    btn.innerHTML='<i class="ti ti-player-play"></i> Start session';btn.className="btn btn-ac";
+    const mins=Math.round(sessionSeconds/60);
+    if(mins>0){
+      const durations=ulo("sessionDurations",{});durations[tstr()]=(durations[tstr()]||0)+mins;usv("sessionDurations",durations);
+      toast(`Session logged — ${mins} min`);
+    }
+    sessionSeconds=0;document.getElementById("session-display").textContent="00:00";
+  }else{
+    sessionRunning=true;sessionStartTs=Date.now();
+    btn.innerHTML='<i class="ti ti-player-stop"></i> End session';btn.className="btn btn-rd";
+    sessionInterval=setInterval(()=>{sessionSeconds=Math.floor((Date.now()-sessionStartTs)/1000);document.getElementById("session-display").textContent=fmtSession(sessionSeconds);},1000);
+  }
+}
+
+// ACHIEVEMENT BADGES
+const BADGE_DEFS=[
+  {id:"first-pr",icon:"ti-award",label:"First PR",check:()=>Object.keys(G.prs).length>=1},
+  {id:"five-pr",icon:"ti-trophy",label:"5 PRs",check:()=>Object.keys(G.prs).length>=5},
+  {id:"streak-3",icon:"ti-flame",label:"3-Day Streak",check:()=>Math.max(0,...Object.values(CUR.hStreaks))>=3},
+  {id:"streak-7",icon:"ti-flame",label:"7-Day Streak",check:()=>Math.max(0,...Object.values(CUR.hStreaks))>=7},
+  {id:"sessions-10",icon:"ti-barbell",label:"10 Workouts",check:()=>CUR.gymLog.length+CUR.quickSessions.length>=10},
+  {id:"sessions-50",icon:"ti-barbell",label:"50 Workouts",check:()=>CUR.gymLog.length+CUR.quickSessions.length>=50},
+  {id:"weight-loss",icon:"ti-scale",label:"First kg Lost",check:()=>{const s=G.cur?.weight||0,c=CUR.weights[0]?.val||s;return s-c>=1;}},
+  {id:"quick-train",icon:"ti-bolt",label:"Quick Trainer",check:()=>CUR.quickSessions.length>=1},
+  {id:"challenge-win",icon:"ti-flag",label:"Challenge Won",check:()=>G.challenges.some(c=>c.participants[G.cur?.id]?.done)},
+  {id:"group-member",icon:"ti-users-group",label:"Joined a Group",check:()=>G.groups.some(g=>g.members.some(m=>m.id===G.cur?.id))},
+  {id:"friend-added",icon:"ti-user-plus",label:"Made a Friend",check:()=>ulo("friends",[]).length>=1},
+  {id:"perfect-week",icon:"ti-star",label:"Perfect Habit Day",check:()=>[...CUR.habits.fitness,...CUR.habits.lifestyle,...CUR.habits.mental].every(Boolean)&&CUR.habits.fitness.length>0},
+];
+function buildBadges(){
+  const el=document.getElementById("badges-grid");if(!el)return;
+  let unlocked=0;
+  el.innerHTML=BADGE_DEFS.map(b=>{
+    const isOn=b.check();if(isOn)unlocked++;
+    return`<div style="display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 6px;border-radius:12px;background:${isOn?"var(--ac-bg)":"var(--sf2)"};opacity:${isOn?1:.5}">
+      <div style="width:38px;height:38px;border-radius:50%;background:${isOn?"var(--ac)":"var(--sf3)"};display:flex;align-items:center;justify-content:center"><i class="ti ${b.icon}" style="font-size:18px;color:${isOn?"#fff":"var(--tx3)"}"></i></div>
+      <span style="font-size:10px;font-weight:700;color:${isOn?"var(--ac-tx)":"var(--tx3)"};text-align:center;line-height:1.2">${b.label}</span>
+    </div>`;
+  }).join("");
+  const cEl=document.getElementById("badges-count");if(cEl)cEl.textContent=unlocked+"/"+BADGE_DEFS.length;
+}
+// BODY MEASUREMENTS
+function logMeasurements(){
+  const chest=parseFloat(document.getElementById("bm-chest").value)||null;
+  const waist=parseFloat(document.getElementById("bm-waist").value)||null;
+  const arms=parseFloat(document.getElementById("bm-arms").value)||null;
+  const legs=parseFloat(document.getElementById("bm-legs").value)||null;
+  if(!chest&&!waist&&!arms&&!legs){toast("Enter at least one measurement");return;}
+  const measurements=ulo("measurements",[]);
+  measurements.unshift({date:tstr(),chest,waist,arms,legs});
+  if(measurements.length>50)measurements.length=50;
+  usv("measurements",measurements);
+  document.getElementById("bm-chest").value="";document.getElementById("bm-waist").value="";document.getElementById("bm-arms").value="";document.getElementById("bm-legs").value="";
+  buildMeasurements();toast("Measurements logged!");
+}
+function buildMeasurements(){
+  const el=document.getElementById("measurements-list");if(!el)return;
+  const measurements=ulo("measurements",[]);
+  if(!measurements.length){el.innerHTML="";return;}
+  el.innerHTML=measurements.slice(0,6).map(m=>`<div class="row"><div class="rl"><div class="rt">${fmt(m.date)}</div><div class="rs">${[m.chest?"Chest "+m.chest+"cm":"",m.waist?"Waist "+m.waist+"cm":"",m.arms?"Arms "+m.arms+"cm":"",m.legs?"Legs "+m.legs+"cm":""].filter(Boolean).join(" · ")}</div></div></div>`).join("");
+}
+// MACRO TRENDS
+function buildMacroTrends(){
+  const el=document.getElementById("macro-chart");if(!el)return;
+  const days=[];
+  for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);days.push(d.toISOString().split("T")[0]);}
+  const data=days.map(d=>{
+    const meals=ld(uk("meals")+"_"+d,[]);
+    const cal=meals.reduce((s,m)=>s+(m.cal||0),0),prot=meals.reduce((s,m)=>s+(m.prot||0),0);
+    return{date:d,cal,prot};
+  });
+  const maxCal=Math.max(1,...data.map(d=>d.cal)),maxProt=Math.max(1,...data.map(d=>d.prot));
+  const dayLabels=days.map(d=>new Date(d+"T12:00").toLocaleDateString("en-AU",{weekday:"short"})[0]);
+  el.innerHTML=`
+    <div style="display:flex;justify-content:space-between;align-items:flex-end;height:90px;gap:4px;margin-bottom:6px">
+      ${data.map((d,i)=>`<div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:2px">
+        <div style="width:100%;background:var(--am);border-radius:3px 3px 0 0;height:${Math.max(2,Math.round(d.cal/maxCal*55))}px" title="${d.cal} kcal"></div>
+        <div style="width:100%;background:var(--gn);border-radius:3px 3px 0 0;height:${Math.max(2,Math.round(d.prot/maxProt*30))}px" title="${d.prot}g protein"></div>
+      </div>`).join("")}
+    </div>
+    <div style="display:flex;justify-content:space-between">${dayLabels.map(l=>`<span style="flex:1;text-align:center;font-size:10px;color:var(--tx3);font-weight:600">${l}</span>`).join("")}</div>
+    <div style="display:flex;gap:14px;margin-top:10px;justify-content:center">
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx3)"><span style="width:10px;height:10px;border-radius:2px;background:var(--am);display:inline-block"></span>Calories</span>
+      <span style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--tx3)"><span style="width:10px;height:10px;border-radius:2px;background:var(--gn);display:inline-block"></span>Protein</span>
+    </div>`;
+}
+// XP & LEVEL
+function computeXP(){
+  const challengePts=Object.values(G.challenges).reduce((s,c)=>s+(c.participants[G.cur?.id]?.pts||0),0);
+  const sessionsXP=(CUR.gymLog.length+CUR.quickSessions.length)*5;
+  const prXP=Object.keys(G.prs).length*15;
+  const habitXP=Math.max(0,...Object.values(CUR.hStreaks))*3;
+  return challengePts+sessionsXP+prXP+habitXP;
+}
+const LEVEL_TITLES=["Rookie","Beginner","Committed","Consistent","Dedicated","Strong","Athlete","Elite","Champion","Forge Legend"];
+function buildXPLevel(){
+  const xp=computeXP();
+  const level=Math.min(LEVEL_TITLES.length,Math.floor(Math.sqrt(xp/40))+1);
+  const xpForLevel=(lv)=>Math.pow(lv-1,2)*40;
+  const curFloor=xpForLevel(level),nextFloor=xpForLevel(level+1);
+  const pct=level>=LEVEL_TITLES.length?100:Math.round(((xp-curFloor)/(nextFloor-curFloor))*100);
+  const lvlEl=document.getElementById("level-num");if(lvlEl)lvlEl.textContent=level;
+  const titleEl=document.getElementById("level-title");if(titleEl)titleEl.textContent=LEVEL_TITLES[level-1]||"Forge Legend";
+  const xpEl=document.getElementById("level-xp");if(xpEl)xpEl.textContent=xp+" XP total";
+  const barEl=document.getElementById("level-bar");if(barEl)barEl.style.width=pct+"%";
+  const nextEl=document.getElementById("level-next");if(nextEl)nextEl.textContent=level>=LEVEL_TITLES.length?"Max level reached":(nextFloor-xp)+" XP to level "+(level+1);
+}
+// WEEKLY RECAP
+function buildWeeklyRecap(){
+  const el=document.getElementById("weekly-recap-card");if(!el)return;
+  const now=new Date(),ws=new Date(now);ws.setDate(now.getDate()-now.getDay());
+  const weekPRs=Object.entries(G.prs).filter(([ex,pr])=>new Date(pr.date+"T12:00")>=ws);
+  const gymDays=new Set(CUR.gymLog.filter(l=>new Date(l.date+"T12:00")>=ws).map(l=>l.date));
+  const quickDays=new Set(CUR.quickSessions.filter(q=>new Date(q.date+"T12:00")>=ws).map(q=>q.date));
+  const sessions=new Set([...gymDays,...quickDays]).size;
+  const bestStreak=Math.max(0,...Object.values(CUR.hStreaks));
+  if(sessions===0&&weekPRs.length===0){el.style.display="none";return;}
+  el.style.display="block";
+  let highlight="Keep it going this week.";
+  if(weekPRs.length){const [ex,pr]=weekPRs.sort((a,b)=>b[1].kg-a[1].kg)[0];highlight=`New PR: ${ex} at ${pr.kg}kg x ${pr.reps}.`;}
+  else if(sessions>=5){highlight=`${sessions} training days this week — outstanding consistency.`;}
+  else if(bestStreak>=5){highlight=`${bestStreak}-day habit streak going strong.`;}
+  document.getElementById("weekly-recap-text").textContent=highlight;
+  document.getElementById("weekly-recap-sessions").textContent=sessions;
+  document.getElementById("weekly-recap-prs").textContent=weekPRs.length;
+}
 // GYM
+function buildVolumeTracking(){
+  const el=document.getElementById("volume-list");if(!el)return;
+  const now=new Date(),ws=new Date(now);ws.setDate(now.getDate()-now.getDay());
+  const muscleCounts={};
+  CUR.gymLog.filter(l=>new Date(l.date+"T12:00")>=ws).forEach(l=>{
+    const exDef=EXDB.find(e=>e.n===l.ex);
+    const muscle=exDef?exDef.m.split("/")[0]:"Other";
+    muscleCounts[muscle]=(muscleCounts[muscle]||0)+l.sets.length;
+  });
+  const entries=Object.entries(muscleCounts).sort((a,b)=>b[1]-a[1]);
+  if(!entries.length){el.innerHTML='<div class="empty"><i class="ti ti-chart-bar"></i>Log some sets to see your volume breakdown</div>';return;}
+  const max=Math.max(...entries.map(e=>e[1]));
+  el.innerHTML=entries.map(([m,c])=>`<div class="pg" style="margin-bottom:10px"><div class="ph"><span class="pl">${m}</span><span class="pv">${c} set${c!==1?"s":""}</span></div><div class="pt"><div class="pf pba" style="width:${Math.round(c/max*100)}%"></div></div></div>`).join("");
+}
+// GYM
+// DELOAD REMINDER
+function checkDeload(){
+  const el=document.getElementById("deload-card");if(!el)return;
+  const lastDeload=ld("forge_"+G.cur.id+"_lastDeload",null);
+  const since=lastDeload?new Date(lastDeload+"T12:00"):(CUR.weights.length?new Date(CUR.weights[CUR.weights.length-1].date+"T12:00"):new Date(Date.now()-42*86400000));
+  const weeksWithTraining=new Set();
+  CUR.gymLog.forEach(l=>{const d=new Date(l.date+"T12:00");if(d>=since){const wk=Math.floor((d-since)/(7*86400000));weeksWithTraining.add(wk);}});
+  CUR.quickSessions.forEach(q=>{const d=new Date(q.date+"T12:00");if(d>=since){const wk=Math.floor((d-since)/(7*86400000));weeksWithTraining.add(wk);}});
+  if(weeksWithTraining.size>=5){
+    el.style.display="block";
+    document.getElementById("deload-text").textContent=`You've trained for ${weeksWithTraining.size} weeks straight. A lighter week helps recovery and long-term progress.`;
+  }else{el.style.display="none";}
+}
+function markDeloadDone(){
+  usv("lastDeload",tstr());
+  document.getElementById("deload-card").style.display="none";
+  toast("Deload week marked — enjoy the recovery!");
+}
 // QUICK TRAINING
 let qtSelectedType=null;
 function buildQuickTrainGrid(){
@@ -1729,6 +2003,16 @@ function buildGymHist(){
   document.getElementById("gym-hist").innerHTML=allRows.length?allRows.map(r=>r.html).join(""):'<div class="empty"><i class="ti ti-barbell"></i>No sessions yet</div>';
 }
 function buildPRList(){const el=document.getElementById("pr-list");const prs=Object.entries(G.prs);if(!prs.length){el.innerHTML='<div class="empty"><i class="ti ti-award"></i>PRs appear when you beat a previous best</div>';return;}el.innerHTML=prs.sort((a,b)=>b[1].date.localeCompare(a[1].date)).slice(0,10).map(([ex,pr])=>`<div class="row"><div class="rl"><div class="rt">${ex}</div><div class="rs">${fmt(pr.date)}</div></div><div class="rr"><span style="font-size:13px;font-weight:700;color:var(--am-tx)">${pr.kg}kg x ${pr.reps}</span></div></div>`).join("");}
+function calcOneRepMax(){
+  const w=parseFloat(document.getElementById("orm-weight").value);
+  const r=parseInt(document.getElementById("orm-reps").value);
+  const lbl=document.getElementById("orm-unit-lbl");if(lbl)lbl.textContent=getWeightUnit();
+  const resEl=document.getElementById("orm-result");
+  if(!w||!r||r<1){resEl.textContent="--";return;}
+  if(r===1){resEl.textContent=w;return;}
+  const orm=w*(1+r/30);
+  resEl.textContent=Math.round(orm*10)/10;
+}
 
 // PROGRAMS
 function searchExProg(q){const r=document.getElementById("prog-ex-res");if(q.length<1){r.classList.remove("on");return;}const m=EXDB.filter(e=>e.n.toLowerCase().includes(q.toLowerCase())).slice(0,8);r.innerHTML=m.map(e=>`<div class="fsi" onclick="addProgEx(\`${e.n}\`,'${e.m}')"><div class="fsi-n">${e.n}</div><div class="fsi-m">${e.m}</div></div>`).join("");r.classList.toggle("on",m.length>0);}
@@ -1803,16 +2087,20 @@ function toggleGoalDone(i){CUR.goals[i].done=!CUR.goals[i].done;usv("goals",CUR.
 function delGoal(i){CUR.goals.splice(i,1);usv("goals",CUR.goals);buildGoalList();buildGoalDash();}
 
 // WEIGHT + CALENDAR
-function logW(){const val=parseFloat(document.getElementById("wi").value);if(!val){toast("Enter weight");return;}CUR.weights.unshift({date:document.getElementById("wd").value||tstr(),val});if(CUR.weights.length>60)CUR.weights=CUR.weights.slice(0,60);usv("weights",CUR.weights);buildWeightLog();updateDash();toast("Weight logged!");}
+function logW(){const raw=parseFloat(document.getElementById("wi").value);if(!raw){toast("Enter weight");return;}const val=getWeightUnit()==="lb"?lbToKg(raw):raw;CUR.weights.unshift({date:document.getElementById("wd").value||tstr(),val});if(CUR.weights.length>60)CUR.weights=CUR.weights.slice(0,60);usv("weights",CUR.weights);buildWeightLog();updateDash();toast("Weight logged!");}
 function buildWeightLog(){
   const start=G.cur?.weight||82,goal=G.cur?.goal||76,cur=CUR.weights[0]?.val||start;
   const lost=Math.max(0,+(start-cur).toFixed(1)),diff=Math.max(0.1,start-goal);
   const p=Math.max(0,Math.min(100,Math.round(lost/diff*100)));
-  document.getElementById("pr-cur").textContent=cur;document.getElementById("pr-lost").textContent=lost;
+  const u=getWeightUnit(),uLabel=u==="lb"?" lb":" kg";
+  const curDisp=u==="lb"?kgToLb(cur):cur,lostDisp=u==="lb"?kgToLb(lost):lost;
+  document.getElementById("pr-cur").textContent=curDisp;document.getElementById("pr-lost").textContent=lostDisp;
+  const pcu=document.getElementById("pr-cur-unit");if(pcu)pcu.textContent=uLabel;
+  const plu=document.getElementById("pr-lost-unit");if(plu)plu.textContent=uLabel;
   document.getElementById("pr-pct").textContent=p+"%";document.getElementById("pr-bar").style.width=p+"%";
   const wk=Math.min(16,Math.max(1,Math.round((new Date()-new Date("2025-06-29"))/(7*24*3600*1000))+1));
   document.getElementById("pr-wk").textContent="Week "+wk+" of 16";document.getElementById("pr-wkb").style.width=Math.round(wk/16*100)+"%";
-  document.getElementById("w-log").innerHTML=CUR.weights.length?CUR.weights.slice(0,10).map((w,i)=>{const prev=CUR.weights[i+1],diff=prev?+(w.val-prev.val).toFixed(1):null;return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:.5px solid var(--bd)"><span style="font-size:13px;color:var(--tx3)">${fmt(w.date)}</span><span style="font-size:15px;font-weight:700;color:var(--tx)">${w.val}kg</span>${diff!=null?`<span style="font-size:12px;font-weight:600;color:${diff<0?"var(--gn)":"var(--rd)"}">${diff>0?"+":""}${diff}kg</span>`:""}</div>`;}).join(""):'<div class="empty"><i class="ti ti-scale"></i>Log your first weigh-in</div>';
+  document.getElementById("w-log").innerHTML=CUR.weights.length?CUR.weights.slice(0,10).map((w,i)=>{const prev=CUR.weights[i+1],diffV=prev?+(w.val-prev.val).toFixed(1):null;const wDisp=u==="lb"?kgToLb(w.val):w.val,diffDisp=diffV!=null?(u==="lb"?kgToLb(diffV):diffV):null;return`<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:.5px solid var(--bd)"><span style="font-size:13px;color:var(--tx3)">${fmt(w.date)}</span><span style="font-size:15px;font-weight:700;color:var(--tx)">${wDisp}${uLabel}</span>${diffDisp!=null?`<span style="font-size:12px;font-weight:600;color:${diffDisp<0?"var(--gn)":"var(--rd)"}">${diffDisp>0?"+":""}${diffDisp}${uLabel}</span>`:""}</div>`;}).join(""):'<div class="empty"><i class="ti ti-scale"></i>Log your first weigh-in</div>';
 }
 function calNav(d){calOff2+=d;buildCalendar();}
 function buildCalendar(){
@@ -1846,22 +2134,28 @@ function renderChallengeCard(c,isDash){
     const pct=Math.min(100,Math.round((cur/(c.target||1))*100));
     const isDone=cur>=(c.target||1);
     if(isDone&&!my.done){my.done=true;my.pts=c.pts;c.participants[G.cur.id]=my;sv("forge_challenges",G.challenges);autoPost("challenge",G.cur.name+" hit the target on "+c.name+"! +"+c.pts+"pts");}
-    progressHtml=`<div class="pg" style="margin-bottom:10px"><div class="ph"><span class="pl">Progress</span><span class="pv">${cur}/${c.target} ${c.unit}</span></div><div class="pt"><div class="pf ${isDone?"pg2":"pba"}" style="width:${pct}%"></div></div></div>`;
+    const isDist=c.type==="distance",distU=getDistUnit();
+    const curDisp=isDist&&distU==="mi"?kmToMi(cur):cur;
+    const targetDisp=isDist&&distU==="mi"?kmToMi(c.target):c.target;
+    const unitDisp=isDist?distU:c.unit;
+    progressHtml=`<div class="pg" style="margin-bottom:10px"><div class="ph"><span class="pl">Progress</span><span class="pv">${curDisp}/${targetDisp} ${unitDisp}</span></div><div class="pt"><div class="pf ${isDone?"pg2":"pba"}" style="width:${pct}%"></div></div></div>`;
   }
   const joinBtns=my.done?`<button class="done-btn done btn-f"><i class="ti ti-check"></i>${isProgress?"Target hit! ":"Completed! "}+${c.pts}pts</button>`
     :my.declined?`<button class="btn btn-f" onclick="undecline('${c.id}')"><i class="ti ti-refresh"></i>Change mind</button>`
-    :isProgress?(my.pts!==undefined?`<div style="display:flex;gap:8px">${c.type==="distance"?`<button class="btn btn-ac" style="flex:2" onclick="logDistanceProgress('${c.id}')"><i class="ti ti-plus"></i>Log ${c.unit}</button>`:`<span style="flex:2;font-size:12px;color:var(--tx3);align-self:center;text-align:center">Auto-tracked from gym log</span>`}<button class="btn btn-rd" style="flex:1" onclick="declineCh('${c.id}')">Pass</button></div>`:`<button class="btn btn-ac btn-f" onclick="acceptCh('${c.id}')"><i class="ti ti-trophy"></i>Join challenge</button>`)
+    :isProgress?(my.pts!==undefined?`<div style="display:flex;gap:8px">${c.type==="distance"?`<button class="btn btn-ac" style="flex:2" onclick="logDistanceProgress('${c.id}')"><i class="ti ti-plus"></i>Log ${getDistUnit()}</button>`:`<span style="flex:2;font-size:12px;color:var(--tx3);align-self:center;text-align:center">Auto-tracked from gym log</span>`}<button class="btn btn-rd" style="flex:1" onclick="declineCh('${c.id}')">Pass</button></div>`:`<button class="btn btn-ac btn-f" onclick="acceptCh('${c.id}')"><i class="ti ti-trophy"></i>Join challenge</button>`)
     :`<div style="display:flex;gap:8px"><button class="btn btn-ac" style="flex:2" onclick="acceptCh('${c.id}')"><i class="ti ti-trophy"></i>Accept</button><button class="btn" style="flex:${isDash?1:2}" onclick="completeCh('${c.id}')"><i class="ti ti-check"></i>Done</button><button class="btn btn-rd" style="flex:1" onclick="declineCh('${c.id}')">Pass</button></div>`;
   return`<div class="ch-card${my.declined?" declined":""}"><div class="ch-title">${c.name}${my.declined?' <span class="badge brd">Passed</span>':""}</div><div class="ch-desc">${c.desc}</div><div class="ch-meta"><span class="badge bam">${c.pts} pts</span><span class="badge bb">${Object.keys(c.participants).length} joined</span>${groupTag?`<span class="badge bp"><i class="ti ti-users-group" style="font-size:11px"></i> ${groupTag.name}</span>`:""}</div>${progressHtml}${joinBtns}<button class="btn btn-sm btn-f" style="margin-top:8px" onclick="openInvite('${c.id}')"><i class="ti ti-user-plus"></i>Invite friends</button></div>`;
 }
 function logDistanceProgress(id){
   const c=G.challenges.find(c=>c.id==id);if(!c)return;
-  const amt=parseFloat(prompt(`How many ${c.unit} did you log?`,"1"));if(!amt||amt<=0)return;
+  const distU=getDistUnit();
+  const amtRaw=parseFloat(prompt(`How many ${distU} did you log?`,"1"));if(!amtRaw||amtRaw<=0)return;
+  const amt=distU==="mi"?miToKm(amtRaw):amtRaw;
   const my=c.participants[G.cur.id]||{name:G.cur.name,pts:0,done:false,declined:false,progress:0};
   my.progress=(my.progress||0)+amt;
   c.participants[G.cur.id]=my;
   sv("forge_challenges",G.challenges);buildChallenges();buildDashChallenge();buildLeaderboard();
-  toast(`+${amt}${c.unit} logged — ${my.progress}/${c.target}${c.unit}`);
+  toast(`+${amtRaw}${distU} logged`);
 }
 function buildChallenges(){
   const active=G.challenges.filter(c=>c.active&&c.exp>=tstr());
